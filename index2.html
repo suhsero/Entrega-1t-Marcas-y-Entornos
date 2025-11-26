@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrusel Estilo Steam</title>
+    <!-- Carga de Tailwind CSS CDN para estilos modernos y responsivos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de jQuery CDN para la interactividad del carrusel -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        /* Configuración de fuente y fondo general */
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1b2838;
+            /* Fondo oscuro de Steam */
+            margin: 0;
+            overflow-x: hidden;
+            /* Evita scroll horizontal durante la animación */
+        }
+        /* Estilos personalizados para el contenedor principal de la imagen/video */
+        
+        #main-media {
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%;
+            /* Relación de aspecto 16:9 */
+            position: relative;
+            overflow: hidden;
+            border-radius: 6px;
+            background-color: #000;
+            /* Fondo negro para la transición de fade */
+        }
+        
+        #main-media>img,
+        #main-media>video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            z-index: 1;
+        }
+        /* --- Estilos para las Flechas de Navegación --- */
+        
+        .nav-button {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 48px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+            color: white;
+            cursor: pointer;
+            border: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, background-color 0.2s;
+        }
+        
+        #main-media:hover .nav-button {
+            opacity: 1;
+        }
+        
+        .nav-button:hover {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        
+        #prev-button {
+            left: 0;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.5), transparent);
+        }
+        
+        #next-button {
+            right: 0;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.5), transparent);
+        }
+        
+        .arrow-icon {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+        }
+        /* Estilo para las miniaturas */
+        
+        .thumbnail-item {
+            cursor: pointer;
+            width: 100px;
+            height: 56.25px;
+            border: 2px solid transparent;
+            opacity: 0.6;
+            transition: opacity 0.2s, border-color 0.2s;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .thumbnail-item.active {
+            border-color: #4c8cbf;
+            opacity: 1;
+        }
+        
+        .thumbnail-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .play-icon-small {
+            width: 12px;
+            height: 12px;
+            fill: white;
+            opacity: 0.8;
+        }
+        /* Espaciador para empujar el contenido hacia abajo y dar espacio al logo centrado inicial */
+        
+        .header-spacer {
+            height: 384px;
+            /* AUMENTADO: Coincide con h-96 (384px) para que el contenido toque el título */
+            transition: height 0.5s ease-in-out;
+        }
+        
+        .header-spacer.scrolled {
+            height: 100px;
+            /* Se reduce cuando el logo se hace pequeño */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 
+      CONTENEDOR DEL TÍTULO DINÁMICO
+    -->
+    <div id="sticky-header" class="fixed top-0 left-0 w-full z-50 flex items-center py-4 transition-all duration-500 ease-in-out h-96 pointer-events-none">
+        <img id="title-img" src="title.png" alt="Título del Juego" class="absolute top-0 left-1/2 -translate-x-1/2 h-96 w-auto max-w-full drop-shadow-xl transition-all duration-500 ease-in-out origin-top-left pointer-events-auto">
+    </div>
+
+    <!-- Espaciador para que el contenido no quede oculto detrás del header fijo inicialmente -->
+    <div id="content-spacer" class="header-spacer w-full"></div>
+
+    <!-- Contenedor Principal -->
+    <div class="head_container p-4 sm:p-8 pt-0">
+        <div class="max-w-6xl mx-auto">
+
+            <!-- CONTENEDOR FLEXIBLE -->
+            <div class="lg:flex lg:space-x-8">
+
+                <!-- 1. BLOQUE IZQUIERDO: Carrusel -->
+                <div class="lg:flex-grow lg:max-w-[70%]">
+                    <div id="main-carousel" class="mb-4 bg-gray-900 rounded-lg shadow-lg relative group">
+                        <div id="main-media">
+                            <!-- Flechas de Navegación -->
+                            <button id="prev-button" class="nav-button" title="Anterior">
+                                <svg class="arrow-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                            </button>
+                            <button id="next-button" class="nav-button" title="Siguiente">
+                                <svg class="arrow-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                            </button>
+                            <!-- Contenido dinámico -->
+                        </div>
+                    </div>
+
+                    <!-- Miniaturas -->
+                    <div id="thumbnails" class="flex flex-wrap gap-2 justify-start sm:justify-start">
+                        <!-- Vid 1 -->
+                        <div class="thumbnail-item active" data-index="0" data-type="video" data-url="vid1.mp4" data-poster="thumb1.png">
+                            <img src="thumb1.png" onerror="this.src='https://placehold.co/100x56/1f4a66/ffffff?text=FALTA+thumb1'" alt="Miniatura vid1" class="w-full h-full object-cover">
+                            <div class="thumbnail-video-overlay"><svg class="play-icon-small" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>
+                        </div>
+                        <!-- Vid 2 -->
+                        <div class="thumbnail-item" data-index="1" data-type="video" data-url="vid2.mp4" data-poster="thumb2.png">
+                            <img src="thumb2.png" onerror="this.src='https://placehold.co/100x56/2a475e/ffffff?text=FALTA+thumb2'" alt="Miniatura vid2" class="w-full h-full object-cover">
+                            <div class="thumbnail-video-overlay"><svg class="play-icon-small" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>
+                        </div>
+                        <!-- Img 1 -->
+                        <div class="thumbnail-item" data-index="2" data-type="image" data-url="img1.png">
+                            <img src="img1.png" onerror="this.src='https://placehold.co/100x56/4e849c/ffffff?text=FALTA+img1'" alt="Miniatura img1" class="w-full h-full object-cover">
+                        </div>
+                        <!-- Img 2 -->
+                        <div class="thumbnail-item" data-index="3" data-type="image" data-url="img2.png">
+                            <img src="img2.png" onerror="this.src='https://placehold.co/100x56/6c7a89/ffffff?text=FALTA+img2'" alt="Miniatura img2" class="w-full h-full object-cover">
+                        </div>
+                        <!-- Img 3 -->
+                        <div class="thumbnail-item" data-index="4" data-type="image" data-url="img3.png">
+                            <img src="img3.png" onerror="this.src='https://placehold.co/100x56/8b98a5/ffffff?text=FALTA+img3'" alt="Miniatura img3" class="w-full h-full object-cover">
+                        </div>
+                        <!-- Img 4 -->
+                        <div class="thumbnail-item" data-index="5" data-type="image" data-url="img4.png">
+                            <img src="img4.png" onerror="this.src='https://placehold.co/100x56/3d5c6f/ffffff?text=FALTA+img4'" alt="Miniatura img4" class="w-full h-full object-cover">
+                        </div>
+                        <!-- Img 5 -->
+                        <div class="thumbnail-item" data-index="6" data-type="image" data-url="img5.png">
+                            <img src="img5.png" onerror="this.src='https://placehold.co/100x56/3d5c6f/ffffff?text=FALTA+img5'" alt="Miniatura img5" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. BLOQUE DERECHO: Resumen -->
+                <div class="lg:w-80 w-full mt-6 lg:mt-0 space-y-4">
+                    <div class="p-4 bg-[#23354a] rounded-lg shadow-lg text-white">
+                        <h2 class="text-xl font-bold mb-3">Acerca de este juego</h2>
+                        <!-- TEXTO ACTUALIZADO AQUÍ -->
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            Sumérgete en el final de una búsqueda épica por el Templo de Piladuro, un tesoro legendario resguardado en la oscuridad te espera. Cuando un monstruo colosal emerge de las sombras , solo cuatro opciones te separan del éxito o de una muerte segura. Tus
+                            decisiones, desde correr hacia un botón oculto hasta usar un pico o la distracción de una linterna, determinarán si sales como el Dueño del Pilaguapo o si te conviertes en una víctima más de la criatura. ¡Atrévete a la aventura
+                            definitiva!
+                        </p>
+                    </div>
+
+                    <!-- BOTÓN MODIFICADO: Ahora es un enlace "Ver más" -->
+                    <a href="https://store.steampowered.com/" target="_blank" class="block w-full text-center py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-md shadow-md transition duration-200 no-underline">
+                        <span class="text-lg">Ver más</span>
+                    </a>
+
+                    <div class="text-sm text-gray-400 p-2 bg-[#23354a] rounded-lg">
+                        <p><strong>Fecha de Lanzamiento:</strong> 21 NOV 2025</p>
+                        <p><strong>Desarrollador:</strong> Studio Alpha</p>
+                        <p><strong>Géneros:</strong> RPG, Aventura, Acción</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SE ELIMINÓ EL CONTENIDO EXTRA DE PRUEBA DE SCROLL -->
+            <!-- Agregamos un pequeño padding bottom para que no quede pegado al final si la pantalla es muy alta -->
+            <div class="pb-12"></div>
+
+        </div>
+    </div>
+
+    <script>
+        // Forzar que la página empiece arriba del todo al recargar
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+
+        $(document).ready(function() {
+            $(window).scrollTop(0);
+            let autoSlideTimer = null;
+
+            // --- LÓGICA DE ANIMACIÓN DEL TÍTULO ---
+            const $titleImg = $('#title-img');
+            const $stickyHeader = $('#sticky-header');
+            const $spacer = $('#content-spacer');
+
+            $(window).on('scroll', function() {
+                const scrollY = $(window).scrollTop();
+                if (scrollY > 50) {
+                    $titleImg.removeClass('left-1/2 -translate-x-1/2 h-96 top-0')
+                        .addClass('left-6 translate-x-0 h-16 top-2');
+                    $stickyHeader.removeClass('h-96').addClass('h-20');
+                    $spacer.addClass('scrolled');
+                } else {
+                    $titleImg.addClass('left-1/2 -translate-x-1/2 h-96 top-0')
+                        .removeClass('left-6 translate-x-0 h-16 top-2');
+                    $stickyHeader.addClass('h-96').removeClass('h-20');
+                    $spacer.removeClass('scrolled');
+                }
+            });
+
+            // --- LÓGICA DEL CARRUSEL ---
+            const $thumbnails = $('.thumbnail-item');
+            const totalItems = $thumbnails.length;
+
+            function generateMediaElement(url, type, posterUrl) {
+                if (type === 'video') {
+                    return `
+                        <video autoplay muted playsinline class="w-full h-full object-cover" 
+                                poster="${posterUrl}"
+                                onerror="this.src='https://placehold.co/1280x720/FF5733/FFFFFF?text=ERROR:+VIDEO+NO+ENCONTRADO'">
+                            <source src="${url}" type="video/mp4">
+                            Tu navegador no soporta el formato de video.
+                        </video>
+                    `;
+                } else {
+                    return `<img src="${url}" alt="Medio Principal" class="w-full h-full object-cover"
+                                 onerror="this.src='https://placehold.co/1280x720/993333/FFFFFF?text=ERROR:+IMAGEN+NO+ENCONTRADA'">`;
+                }
+            }
+
+            function updateMainMedia(url, type, posterUrl) {
+                if (autoSlideTimer) {
+                    clearTimeout(autoSlideTimer);
+                    autoSlideTimer = null;
+                }
+                const $mainMediaContainer = $('#main-media');
+                const $buttons = $mainMediaContainer.children('.nav-button').detach();
+                const $currentMedia = $mainMediaContainer.children('img, video');
+
+                const loadNewMedia = () => {
+                    $mainMediaContainer.empty();
+                    const $newMedia = $(generateMediaElement(url, type, posterUrl));
+                    $newMedia.hide();
+                    $mainMediaContainer.append($newMedia);
+                    $mainMediaContainer.append($buttons);
+
+                    $newMedia.fadeIn(300, function() {
+                        if (type === 'video') {
+                            const $video = $mainMediaContainer.find('video');
+                            $video.on('ended', function() {
+                                navigateCarousel(1);
+                            });
+                        } else {
+                            autoSlideTimer = setTimeout(function() {
+                                navigateCarousel(1);
+                            }, 8000);
+                        }
+                    });
+                };
+
+                if ($currentMedia.length > 0) {
+                    $currentMedia.fadeOut(300, loadNewMedia);
+                } else {
+                    loadNewMedia();
+                }
+            }
+
+            $('#main-media').hover(
+                function() {
+                    $(this).find('video').attr('controls', 'controls');
+                },
+                function() {
+                    $(this).find('video').removeAttr('controls');
+                }
+            );
+
+            function navigateCarousel(direction) {
+                const $currentActive = $('.thumbnail-item.active');
+                if (!$currentActive.length) return;
+                let currentIndex = parseInt($currentActive.data('index'));
+                let nextIndex = currentIndex + direction;
+                if (nextIndex < 0) nextIndex = totalItems - 1;
+                else if (nextIndex >= totalItems) nextIndex = 0;
+                $thumbnails.filter(`[data-index="${nextIndex}"]`).trigger('click');
+            }
+
+            $thumbnails.on('click', function() {
+                const $this = $(this);
+                updateMainMedia($this.data('url'), $this.data('type'), $this.data('poster'));
+                $('.thumbnail-item').removeClass('active');
+                $this.addClass('active');
+            });
+
+            $('#prev-button').on('click', function(e) {
+                e.stopPropagation();
+                navigateCarousel(-1);
+            });
+            $('#next-button').on('click', function(e) {
+                e.stopPropagation();
+                navigateCarousel(1);
+            });
+
+            const $initialItem = $('.thumbnail-item.active');
+            if ($initialItem.length) {
+                updateMainMedia($initialItem.data('url'), $initialItem.data('type'), $initialItem.data('poster'));
+            }
+        });
+    </script>
+</body>
+
+</html>

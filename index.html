@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('bg.png');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        
+        .title {
+            width: 600px;
+            height: auto;
+        }
+        
+        #title_cont {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        #div_carousel {
+            width: 400px;
+        }
+        
+        #carousel {
+            width: 400px;
+            height: 230px;
+            text-align: center;
+            margin-left: 100px;
+            border-radius: 15px;
+        }
+        
+        #botones {
+            padding-left: 100px;
+        }
+        
+        .desc_juego {
+            width: 600px;
+            margin: auto;
+            margin-top: 20px;
+            font-size: 18px;
+            color: white;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+        }
+        
+        #cont_desc {
+            position: absolute;
+            top: 300px;
+            left: 550px;
+            width: 500px;
+            height: auto;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        #pixel_personaje {
+            width: 250px;
+            height: 250px;
+            border-radius: 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            position: absolute;
+            left: 880px;
+        }
+        
+        #desc_personaje {
+            padding-right: 100px;
+            margin-top: 100px;
+            text-align: right;
+            margin-bottom: 400px;
+        }
+        
+        #desc_pj_text {
+            position: absolute;
+            top: 630px;
+            left: 150px;
+        }
+        
+        .vid_carousel_cont {
+            display: flex;
+            /* 1. Activa el modo Flexbox (necesario para justify-content) */
+            justify-content: center;
+            /* 2. Centra el contenido horizontalmente */
+            align-items: center;
+            /* 3. (Opcional) Asegura centrado vertical si hiciera falta */
+            width: 100%;
+            /* Asegura que el contenedor ocupe todo el ancho de la pantalla */
+            margin-top: 400px;
+            margin-bottom: 100px;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="title_cont">
+        <img src="title.png" alt="" class="title">
+    </div>
+    <div id="cuerpo">
+        <div id="cont_carousel">
+
+            <div id="div_carousel">
+                <img src="img1.png" id="carousel" />
+            </div>
+            <div id="cont_desc">
+                <p class="desc_juego">
+                    Sumérgete en el final de una búsqueda épica por el Templo de Piladuro, un tesoro legendario resguardado en la oscuridad te espera. Cuando un monstruo colosal emerge de las sombras , solo cuatro opciones te separan del éxito o de una muerte segura. Tus
+                    decisiones, desde correr hacia un botón oculto hasta usar un pico o la distracción de una linterna, determinarán si sales como el Dueño del Pilaguapo o si te conviertes en una víctima más de la criatura. ¡Atrévete a la aventura definitiva!
+                </p>
+            </div>
+
+
+
+        </div>
+        <div id="desc_personaje">
+            <div>
+                <img src="pixel1.png" id="pixel_personaje">
+            </div>
+            <div id="desc_pj_text">
+                <p class="desc_juego">
+                    Conoce a Periko, el intrépido explorador que se adentra en las profundidades del Templo de Piladuro. Armado con su ingenio y valentía, Max enfrenta desafíos mortales y criaturas legendarias en su búsqueda del tesoro perdido. Su determinación y habilidades
+                    lo convierten en el héroe perfecto para esta aventura épica.
+            </div>
+        </div>
+        <div class="vid_carousel_cont">
+            <div id="cont_carousel">
+                <video id="carousel_video" width="600" autoplay muted>
+        <source src="vid1.mp4" type="video/mp4">
+    </video>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="jquery.js"></script>
+    <script>
+        //Carousel juego
+        var numero = 1;
+
+        function siguiente() {
+            numero++;
+            if (numero == 6) {
+                numero = 1;
+            }
+            document.getElementById("carousel").src = "img" + numero + ".png";
+        }
+
+        function anterior() {
+            numero--;
+            if (numero == 0) {
+                numero = 6;
+            }
+            document.getElementById("carousel").src = "img" + numero + ".png";
+        }
+
+        setInterval(siguiente, 8000);
+
+        //carousel personaje
+        var num_personaje = 1;
+
+        function siguiente_personaje() {
+            num_personaje++;
+            if (num_personaje == 3) {
+                num_personaje = 1;
+            }
+            document.getElementById("pixel_personaje").src = "pixel" + num_personaje + ".png";
+        }
+
+        setInterval(siguiente_personaje, 5000);
+        var num_video = 1;
+        var total_videos = 2; // Tienes vid1 y vid2
+
+        function siguiente_video() {
+            num_video++;
+
+            if (num_video > total_videos) {
+                num_video = 1;
+            }
+
+            var videoElement = document.getElementById("carousel_video");
+
+            videoElement.src = "vid" + num_video + ".mp4";
+
+            videoElement.play();
+        }
+        document.getElementById("carousel_video").addEventListener('ended', siguiente_video);
+    </script>
+</body>
+
+</html>
